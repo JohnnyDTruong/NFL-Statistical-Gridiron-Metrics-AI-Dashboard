@@ -1,0 +1,678 @@
+:root {
+  --bg-main: #020617;
+  --bg-panel: rgba(15, 23, 42, 0.85);
+  --bg-glass: rgba(30, 41, 59, 0.6);
+
+  --accent-cyan: #22d3ee;
+  --accent-blue: #2563eb;
+  --accent-purple: #7c3aed;
+
+  --text-main: #e5e7eb;
+  --text-muted: #94a3b8;
+  --text-accent: #ffffff;
+
+  --border-glow: rgba(34, 211, 238, 0.4);
+
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --transition: 0.25s ease;
+}
+
+/* ===== GLOBAL ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top, #020617, #000);
+  color: var(--text-main);
+}
+
+/* ===== HEADER ===== */
+header {
+  padding: 3rem 1rem;
+  text-align: center;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.9),
+    rgba(2, 6, 23, 0.95)
+  );
+  border-bottom: 1px solid var(--border-glow);
+}
+
+header h1 {
+  font-size: 2.6rem;
+  margin-bottom: 0.6rem;
+  background: linear-gradient(
+    90deg,
+    var(--accent-cyan),
+    var(--accent-purple)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+header p {
+  color: var(--text-muted);
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem auto;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 0.8rem 1.5rem;
+  margin: 0.3rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 600;
+}
+
+.tab.active {
+  background: var(--accent-cyan);
+  color: #020617;
+  box-shadow: 0 0 12px var(--border-glow);
+}
+
+/* ===== TAB CONTENT ===== */
+.tab-content {
+  display: none;
+  padding: 1rem;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ===== FILTER PANEL ===== */
+.filters {
+  margin: 2rem auto;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--bg-panel);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glow);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.08);
+
+  /* 🔑 FIX */
+  position: relative;
+  overflow: visible;
+  z-index: 10;
+}
+
+.filters select,
+.filters input[type="text"] {
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  color: var(--text-main);
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.filters input[type="text"] {
+  cursor: text;
+}
+
+.filters select:hover,
+.filters select:focus,
+.filters input[type="text"]:hover,
+.filters input[type="text"]:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px var(--border-glow);
+  outline: none;
+}
+
+/* ===== SEARCHABLE PLAYER DROPDOWN ===== */
+.player-search-container {
+  position: relative;
+  width: 220px;
+  z-index: 9999;
+}
+
+/* dropdown panel */
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+
+  background: #1e293b;
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  border-radius: 12px;
+
+  max-height: 200px;
+  overflow-y: auto;
+
+  z-index: 10000;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* hide helper */
+.search-dropdown.hidden {
+  display: none;
+}
+
+/* dropdown rows */
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(34, 211, 238, 0.18);
+}
+
+.dropdown-item.selected {
+  background: var(--accent-cyan);
+  color: #020617;
+}
+
+.highlight {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+/* ===== CHART PANEL ===== */
+.chart-container {
+  max-width: 1100px;
+  margin: 2rem auto 4rem auto;
+  padding: 2rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glow);
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.1);
+
+  width: 700px;
+  height: 400px;
+
+  /* 🔑 keep charts BELOW dropdown */
+  position: relative;
+  z-index: 1;
+}
+
+.chart-container canvas {
+  display: block;
+  margin: 2rem auto;
+}
+
+/* ===== FOOTER ===== */
+footer {
+  text-align: center;
+  padding: 1.2rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.refresh-btn {
+  display: block;              
+  margin: 2rem auto;           
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  color: var(--text-main);
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.refresh-btn:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px var(--border-glow);
+  background: rgba(34, 211, 238, 0.15);
+}
+
+.back-to-top-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 0.75rem 1.1rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  transition: var(--transition);
+  opacity: 0;
+  visibility: hidden;
+  z-index: 1000;
+}
+
+.back-to-top-btn:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Show button after scrolling */
+.back-to-top-btn.show {
+  opacity: 1;
+  visibility: visible;
+}
+.stats-table-section {
+  margin: 3rem auto;
+  max-width: 600px;
+  background: var(--bg-glass);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.stats-table-section h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 0.75rem;
+}
+
+.stats-table thead {
+  background: rgba(255,255,255,0.08);
+}
+
+.stats-table tbody tr:nth-child(even) {
+  background: rgba(255,255,255,0.04);
+}
+
+#trendAISummary:empty,
+#seasonPredictions:empty {
+  display: none;
+}
+/* ===============================
+SEASON TRENDS – AI SUMMARY
+================================ */
+
+.trend-ai-summary {
+  background: #0f172a; /* dark slate */
+  border-left: 5px solid #38bdf8;
+  padding: 16px 20px;
+  margin: 20px 0;
+  border-radius: 8px;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.trend-ai-summary strong {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.trend-ai-summary br {
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ===============================
+PREDICTION CARD
+================================ */
+
+.prediction-card {
+  background: #020617;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 24px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.prediction-card h3 {
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #38bdf8;
+  text-align: left;
+}
+
+/* ===============================
+PREDICTION TABLE
+================================ */
+
+.prediction-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.prediction-table thead {
+  background: #020617;
+}
+
+.prediction-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: #94a3b8;
+  font-weight: 600;
+  border-bottom: 1px solid #1e293b;
+}
+
+.prediction-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #1e293b;
+  color: #e5e7eb;
+}
+
+.prediction-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===============================
+TREND COLOR CODING
+================================ */
+
+.prediction-table td:nth-child(2) {
+  font-weight: 600;
+}
+
+.prediction-table td:nth-child(2):contains("Increasing") {
+  color: #22c55e;
+}
+
+.prediction-table td:nth-child(2):contains("Decreasing") {
+  color: #ef4444;
+}
+
+/* ===============================
+CONFIDENCE BADGES
+================================ */
+
+.prediction-table td:last-child {
+  font-weight: 600;
+}
+
+.prediction-table td:last-child:contains("High") {
+  color: #22c55e;
+}
+
+.prediction-table td:last-child:contains("Medium") {
+  color: #facc15;
+}
+
+.prediction-table td:last-child:contains("Low") {
+  color: #94a3b8;
+}
+
+/* ===============================
+RESPONSIVE
+================================ */
+
+@media (max-width: 768px) {
+  .prediction-table {
+    font-size: 0.8rem;
+  }
+
+  .prediction-card {
+    padding: 16px;
+  }
+
+  .trend-ai-summary {
+    font-size: 0.85rem;
+  }
+}
+
+/* ===============================
+League Trends Charts
+================================ */
+
+.league-card {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #111;
+  border-radius: 8px;
+}
+
+.league-card table {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+.league-card th,
+.league-card td {
+  padding: 8px;
+  border-bottom: 1px solid #333;
+}
+
+.league-card th {
+  text-align: center;
+  font-weight: 600;
+  color: #ccc;
+}
+
+.league-card h4 {
+  margin-bottom: 8px;
+  color: #00d4ff;
+  text-align: center;
+}
+
+#leagueAvg .league-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 20px;
+}
+
+#leagueAvg .league-controls label {
+  color: #aaa;
+  font-size: 0.85rem;
+}
+#leagueAvg .league-controls select {
+  background: #0b0b0b;
+  color: #fff;
+  border: 1px solid #00d4ff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#leagueAvg .league-controls select:hover {
+  border-color: #33e0ff;
+}
+
+#leagueAvg .league-controls select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.25);
+}
+
+#leagueAvg h2 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+/* Default center */
+.league-card td {
+  text-align: center;
+  padding: 8px;
+  border-bottom: 1px solid #333;
+}
+
+/* Player names should be left-aligned */
+.league-card td:nth-child(2) {
+  text-align: center;
+}
+
+/* Team abbreviations tighter */
+.league-card td:nth-child(3) {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.site-footer {
+  background: #0b0b0b;
+  border-top: 1px solid #222;
+  padding: 20px 16px;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;     /* stack vertically */
+  align-items: center;
+  gap: 12px;                  /* spacing between rows */
+  text-align: center;
+}
+
+.footer-left {
+  color: #ccc;
+}
+
+.footer-left .muted {
+  color: #777;
+  display: block;             /* 🔑 forces new line */
+  margin-top: 4px;
+}
+
+.footer-center {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;            /* mobile friendly */
+  justify-content: center;
+}
+
+.badge {
+  background: rgba(0, 212, 255, 0.12);
+  color: #00d4ff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  border: 1px solid rgba(0, 212, 255, 0.35);
+}
+
+.footer-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.footer-right a {
+  color: #00d4ff;
+  text-decoration: none;
+}
+
+.footer-right a:hover {
+  text-decoration: underline;
+}
+
+.divider {
+  color: #555;
+}
+
+.muted {
+  color: #777;
+}
+
+/* ===============================
+NFL AI Chatbot
+================================ */
+
+#nflChat {
+  padding: 24px;
+}
+
+/* Chat container */
+.chat-box {
+  background: #0b0b0b;
+  border: 1px solid #222;
+  border-radius: 10px;
+  padding: 16px;
+  height: 320px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Messages */
+.chat-msg {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* User message */
+.chat-msg.user {
+  align-self: flex-end;
+  background: #00d4ff;
+  color: #000;
+  font-weight: 500;
+}
+
+/* AI message */
+.chat-msg.ai {
+  align-self: flex-start;
+  background: #1a1a1a;
+  color: #eaeaea;
+  border: 1px solid #333;
+}
+
+/* Input row */
+#nflChat input {
+  width: calc(100% - 120px);
+  padding: 10px;
+  background: #111;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 6px;
+  outline: none;
+  margin-right: 8px;
+}
+
+/* Button */
+#sendChat {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #00d4ff, #009ec3);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#sendChat:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 212, 255, 0.35);
+}

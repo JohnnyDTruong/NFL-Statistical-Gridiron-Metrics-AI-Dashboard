@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NFL Gridiron Metrics Dashboard</title>
+  <link rel="stylesheet" href="nfl_style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>NFL Statistical Gridiron Metrics AI Dashboard</h1>
+  <p>Visualize, compare, and explore NFL player stats like never before.</p>
+</header>
+
+<!-- ===== TABS ===== -->
+<section class="tabs">
+  <div class="tab active" data-tab="playerStats">Player Stats</div>
+  <div class="tab" data-tab="playerCompare">Player Comparison</div>
+  <div class="tab" data-tab="seasonTrends">Season Trends</div>
+  <div class="tab" data-tab="leagueAvg">League Averages</div>
+  <div class="tab" data-tab="nflchat">NFL Chat Bot</div>
+</section>
+
+<button id="refreshPageBtn" class="refresh-btn">↻ Refresh</button>
+
+<!-- ===== PLAYER STATS TAB ===== -->
+<section id="playerStats" class="tab-content active">
+  <div class="filters">
+
+    <select id="teamSelect">
+      <option value="">All Teams</option>
+      <!-- teams unchanged -->
+      <option value="ARI">Arizona Cardinals</option>
+      <option value="ATL">Atlanta Falcons</option>
+      <option value="BAL">Baltimore Ravens</option>
+      <option value="BUF">Buffalo Bills</option>
+      <option value="CAR">Carolina Panthers</option>
+      <option value="CHI">Chicago Bears</option>
+      <option value="CIN">Cincinnati Bengals</option>
+      <option value="CLE">Cleveland Browns</option>
+      <option value="DAL">Dallas Cowboys</option>
+      <option value="DEN">Denver Broncos</option>
+      <option value="DET">Detroit Lions</option>
+      <option value="GB">Green Bay Packers</option>
+      <option value="HOU">Houston Texans</option>
+      <option value="IND">Indianapolis Colts</option>
+      <option value="JAX">Jacksonville Jaguars</option>
+      <option value="KC">Kansas City Chiefs</option>
+      <option value="LV">Las Vegas Raiders</option>
+      <option value="LAC">Los Angeles Chargers</option>
+      <option value="LA">Los Angeles Rams</option>
+      <option value="MIA">Miami Dolphins</option>
+      <option value="MIN">Minnesota Vikings</option>
+      <option value="NE">New England Patriots</option>
+      <option value="NO">New Orleans Saints</option>
+      <option value="NYG">New York Giants</option>
+      <option value="NYJ">New York Jets</option>
+      <option value="PHI">Philadelphia Eagles</option>
+      <option value="PIT">Pittsburgh Steelers</option>
+      <option value="SEA">Seattle Seahawks</option>
+      <option value="SF">San Francisco 49ers</option>
+      <option value="TB">Tampa Bay Buccaneers</option>
+      <option value="TEN">Tennessee Titans</option>
+      <option value="WAS">Washington Commanders</option>
+    </select>
+
+    <select id="positionSelect">
+      <option value="">All Positions</option>
+      <option value="QB">Quarterback</option>
+      <option value="WR">Wide Receiver</option>
+      <option value="RB">Running Back</option>
+      <option value="TE">Tight End</option>
+      <option value="DB">Defensive Back</option>
+      <option value="DL">Defensive Lineman</option>
+      <option value="LB">Linebacker</option>
+    </select>
+
+    <select id="seasonSelect">
+      <option value="">Select Season</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+      <option value="2022">2022</option>
+    </select>
+
+    <!-- SEARCHABLE PLAYER DROPDOWN -->
+    <div class="search-wrapper">
+      <input
+        type="text"
+        id="playerSelect"
+        placeholder="Search player..."
+        autocomplete="off"
+      />
+      <div id="playerDropdown" class="search-dropdown hidden"></div>
+    </div>
+
+  </div>
+
+  <div class="chart-container"><canvas id="chart1"></canvas></div>
+  <div class="chart-container"><canvas id="chart2"></canvas></div>
+  <div class="chart-container"><canvas id="chart3"></canvas></div>
+  <div class="chart-container"><canvas id="chart4"></canvas></div>
+  <div class="chart-container"><canvas id="chart5"></canvas></div>
+  <div class="chart-container"><canvas id="chart6"></canvas></div>
+
+<!-- ===== PLAYER ADVANCED STATS TABLE ===== -->
+<div class="stats-table-section">
+  <h2>Advanced Player Metrics</h2>
+
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody id="advancedStatsTable">
+      <!-- JS injects rows -->
+    </tbody>
+  </table>
+</div>
+
+</section>
+
+<!-- ===== PLAYER COMPARISON TAB ===== -->
+<section id="playerCompare" class="tab-content">
+  <div class="filters">
+
+    <select id="compareSeasonSelect">
+      <option value="">Select Season</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+      <option value="2022">2022</option>
+    </select>
+
+    <select id="comparePositionSelect">
+      <option value="">Select Position</option>
+      <option value="QB">Quarterback</option>
+      <option value="WR">Wide Receiver</option>
+      <option value="RB">Running Back</option>
+      <option value="TE">Tight End</option>
+      <option value="DB">Defensive Back</option>
+      <option value="DL">Defensive Lineman</option>
+      <option value="LB">Linebacker</option>
+    </select>
+
+    <!-- PLAYER 1 SEARCH -->
+    <div class="search-wrapper">
+      <input
+        type="text"
+        id="comparePlayer1"
+        placeholder="Search Player 1..."
+        disabled
+        autocomplete="off"
+      />
+      <div id="compareDropdown1" class="search-dropdown hidden"></div>
+    </div>
+
+    <!-- PLAYER 2 SEARCH -->
+    <div class="search-wrapper">
+      <input
+        type="text"
+        id="comparePlayer2"
+        placeholder="Search Player 2..."
+        disabled
+        autocomplete="off"
+      />
+      <div id="compareDropdown2" class="search-dropdown hidden"></div>
+    </div>
+
+  </div>
+
+  <div class="chart-container"><canvas id="compareChart1"></canvas></div>
+  <div class="chart-container"><canvas id="compareChart2"></canvas></div>
+  <div class="chart-container"><canvas id="compareChart3"></canvas></div>
+  <div class="chart-container"><canvas id="compareChart4"></canvas></div>
+  <div class="chart-container"><canvas id="compareChart5"></canvas></div>
+  <div class="chart-container"><canvas id="compareChart6"></canvas></div>
+
+<!-- ===== COMPARISON ADVANCED STATS TABLE ===== -->
+<div class="stats-table-section">
+  <h2>Advanced Stats Comparison</h2>
+
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Player 1</th>
+        <th>Player 2</th>
+      </tr>
+    </thead>
+    <tbody id="compareAdvancedStatsTable">
+      <!-- JS injects rows -->
+    </tbody>
+  </table>
+</div>
+
+</section>
+
+<section id="seasonTrends" class="tab-content">
+
+  <div class="filters">
+    <select id="trendSeasonStart">
+      <option value="">Season Starts</option>
+      <option value="2022">From 2022</option>
+      <option value="2023">From 2023</option>
+      <option value="2024">From 2024</option>
+      <option value="2025">From 2025</option>
+    </select>
+
+    <select id="trendSeasonEnd">
+      <option value="">Season Ends</option>
+      <option value="2022">To 2022</option>
+      <option value="2023">To 2023</option>
+      <option value="2024">To 2024</option>
+      <option value="2025">To 2025</option>
+    </select>
+
+    <select id="trendTeamSelect">
+      <option value="">All Teams</option>
+      <option value="ARI">Arizona Cardinals</option>
+      <option value="ATL">Atlanta Falcons</option>
+      <option value="BAL">Baltimore Ravens</option>
+      <option value="BUF">Buffalo Bills</option>
+      <option value="CAR">Carolina Panthers</option>
+      <option value="CHI">Chicago Bears</option>
+      <option value="CIN">Cincinnati Bengals</option>
+      <option value="CLE">Cleveland Browns</option>
+      <option value="DAL">Dallas Cowboys</option>
+      <option value="DEN">Denver Broncos</option>
+      <option value="DET">Detroit Lions</option>
+      <option value="GB">Green Bay Packers</option>
+      <option value="HOU">Houston Texans</option>
+      <option value="IND">Indianapolis Colts</option>
+      <option value="JAX">Jacksonville Jaguars</option>
+      <option value="KC">Kansas City Chiefs</option>
+      <option value="LV">Las Vegas Raiders</option>
+      <option value="LAC">Los Angeles Chargers</option>
+      <option value="LA">Los Angeles Rams</option>
+      <option value="MIA">Miami Dolphins</option>
+      <option value="MIN">Minnesota Vikings</option>
+      <option value="NE">New England Patriots</option>
+      <option value="NO">New Orleans Saints</option>
+      <option value="NYG">New York Giants</option>
+      <option value="NYJ">New York Jets</option>
+      <option value="PHI">Philadelphia Eagles</option>
+      <option value="PIT">Pittsburgh Steelers</option>
+      <option value="SEA">Seattle Seahawks</option>
+      <option value="SF">San Francisco 49ers</option>
+      <option value="TB">Tampa Bay Buccaneers</option>
+      <option value="TEN">Tennessee Titans</option>
+      <option value="WAS">Washington Commanders</option>
+    </select>
+
+    <select id="trendPositionSelect">
+      <option value="">Select Position</option>
+      <option value="QB">Quarterback</option>
+      <option value="WR">Wide Receiver</option>
+      <option value="RB">Running Back</option>
+      <option value="TE">Tight End</option>
+      <option value="DB">Defensive Back</option>
+      <option value="DL">Defensive Lineman</option>
+      <option value="LB">Linebacker</option>
+    </select>
+
+
+    <div class="search-wrapper">
+      <input
+        type="text"
+        id="trendPlayerSearch"
+        placeholder="Search player..."
+        autocomplete="off"
+      />
+    <div
+      id="trendPlayerDropdown"
+      class="search-dropdown hidden">
+    </div>
+    </div>
+
+
+  </div>
+
+  <div class="chart-container">
+    <canvas id="trendChart"></canvas>
+  </div>
+
+  <div class="trend-ai-summary" id="trendAISummary"></div>
+  <div id="seasonPredictions"></div>
+
+</section>
+
+<section id="leagueAvg" class="tab-content">
+  <h2>League AI Insights</h2>
+
+  <div class="league-controls">
+    <label for="leagueSeasonSelect">Season</label>
+
+    <select id="leagueSeasonSelect">
+      <option value="">Select Season</option>
+      <option value="2022">2022</option>
+      <option value="2023">2023</option>
+      <option value="2024">2024</option>
+      <option value="2025">2025</option>
+    </select>
+
+    <select id="leaguePositionSelect">
+      <option value="">All Positions</option>
+      <option value="QB">QB</option>
+      <option value="RB">RB</option>
+      <option value="WR">WR</option>
+      <option value="TE">TE</option>
+      <option value="DL">DL</option>
+      <option value="LB">LB</option>
+      <option value="DB">DB</option>
+    </select>
+
+  </div>
+
+  <div id="leagueResults"></div>
+</section>
+
+
+<section id="nflchat" class="tab-content">
+  <h2>NFL AI Chat Assistant</h2>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <input id="chatInput" placeholder="Ask about players, trends, seasons..." />
+  <button id="sendChat">Ask AI</button>
+</section>
+
+
+<button id="backToTopBtn" class="back-to-top-btn"> ⬆ </button>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="footer-left">
+      © 2026 Johnny Truong  
+      <span class="muted">| NFL Statistical Gridiron Metrics AI Dashboard |</span>
+    </div>
+
+    <div class="footer-center">
+      <span class="badge">AI-Driven Insights</span>
+      <span class="badge">Data Visualization</span>
+      <span class="badge">NFL Analytics</span>
+    </div>
+
+    <div class="footer-right">
+      <a href="mailto:jonjontruong@yahoo.com">Contact / Feedback</a>
+      <span class="divider">•</span>
+      <span class="muted">Updated Seasonally</span>
+    </div>
+  </div>
+</footer>
+
+
+<script src="nfl_script.js"></script>
+<script src="nfl_script_2.js"></script>
+<script src="nfl_script_3.js"></script>
+</body>
+</html>
