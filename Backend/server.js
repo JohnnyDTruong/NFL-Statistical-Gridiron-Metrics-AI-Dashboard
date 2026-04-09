@@ -121,7 +121,6 @@ const statMap = {
   "interceptions": "def_interceptions",
   "interception": "def_interceptions",
   "ints": "def_interceptions",
-  "int": "def_interceptions",
 
   "tackles": "def_tackles_solo",
   "solo tackles": "def_tackles_solo",
@@ -138,7 +137,12 @@ const statMap = {
   "tackles assisted": "def_tackle_assists",
 
   "forced fumbles": "def_fumbles_forced",
-  "fumbles forced": "def_fumbles_forced"
+  "fumbles forced": "def_fumbles_forced",
+
+  "fantasy points": "fantasy_points",
+  "fantasy point": "fantasy_points",
+  "fantasy pts": "fantasy_points",
+  "fp": "fantasy_points",
 };
 
 /* ================================
@@ -177,9 +181,17 @@ function extractSeason(q) {
 }
 
 function detectStat(q) {
-  for (let phrase in statMap) {
-    if (q.includes(phrase)) return statMap[phrase];
+  const phrases = Object.keys(statMap).sort((a, b) => b.length - a.length);
+
+  for (const phrase of phrases) {
+    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`\\b${escaped}\\b`, "i");
+
+    if (regex.test(q)) {
+      return statMap[phrase];
+    }
   }
+
   return null;
 }
 
@@ -196,6 +208,16 @@ function detectStatLoose(q) {
   if ((words.includes("touchdowns") || words.includes("tds")) && words.includes("receiving")) return "receiving_tds";
 
   return null;
+}
+
+function isChartQuery(q) {
+  return (
+    q.includes("chart") ||
+    q.includes("graph") ||
+    q.includes("visualize") ||
+    q.includes("plot") ||
+    q.includes("trend line")
+  );
 }
 
 /* ================================
@@ -254,6 +276,77 @@ function getConsistencyScore(playerName, stat) {
   return score;
 }
 
+/* Trend Charts */
+
+function buildPlayerTrendChart(playerName, stat) {
+  const seasons = players
+    .filter(p => p.player_display_name === playerName)
+    .sort((a, b) => Number(a.season) - Number(b.season));
+
+  if (seasons.length < 2) return null;
+
+  const labels = seasons.map(p => Number(p.season));
+  const values = seasons.map(p => getStat(p, stat));
+
+  return {
+    chartType: "line",
+    title: `${playerName} ${stat.replace("def_", "").replaceAll("_", " ")}`.replace(/\b\w/g, c => c.toUpperCase()),
+    labels,
+    values,
+    stat,
+    player: playerName
+  };
+}
+
+/* 2 Player Comparison Charts */
+
+function buildComparisonTrendChart(player1, player2, stat) {
+  const p1Seasons = players
+    .filter(p => p.player_display_name === player1)
+    .sort((a, b) => Number(a.season) - Number(b.season));
+
+  const p2Seasons = players
+    .filter(p => p.player_display_name === player2)
+    .sort((a, b) => Number(a.season) - Number(b.season));
+
+  if (!p1Seasons.length || !p2Seasons.length) return null;
+
+  const allSeasons = [...new Set([
+    ...p1Seasons.map(p => Number(p.season)),
+    ...p2Seasons.map(p => Number(p.season))
+  ])].sort((a, b) => a - b);
+
+  const p1Values = allSeasons.map(season => {
+    const row = p1Seasons.find(p => Number(p.season) === season);
+    return row ? getStat(row, stat) : null;
+  });
+
+  const p2Values = allSeasons.map(season => {
+    const row = p2Seasons.find(p => Number(p.season) === season);
+    return row ? getStat(row, stat) : null;
+  });
+
+  return {
+    chartType: "line",
+    title: `${player1} vs ${player2} ${stat.replace("def_", "").replaceAll("_", " ")}`.replace(/\b\w/g, c => c.toUpperCase()),
+    labels: allSeasons,
+    datasets: [
+      {
+        label: player1,
+        data: p1Values,
+        borderWidth: 3,
+        tension: 0.3
+      },
+      {
+        label: player2,
+        data: p2Values,
+        borderWidth: 3,
+        tension: 0.3
+      }
+    ]
+  };
+}
+
 /* ================================
 POSITION DETECTION
 ================================ */
@@ -270,43 +363,39 @@ function detectPosition(q) {
 PLAYER DETECTION
 ================================ */
 function detectPlayers(q) {
-
   let cleanQuery = q
     .toLowerCase()
-    .replace(/[.'"]/g,"")
-    .replace(/20\d{2}/g,"")
+    .replace(/[.'"]/g, "")
+    .replace(/20\d{2}/g, "")
     .trim();
 
-  // remove stat keywords
-  Object.keys(statMap).forEach(phrase => {
-    cleanQuery = cleanQuery.replace(phrase,"");
+  const statPhrases = Object.keys(statMap).sort((a, b) => b.length - a.length);
+
+  statPhrases.forEach(phrase => {
+    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`\\b${escaped}\\b`, "gi");
+    cleanQuery = cleanQuery.replace(regex, "");
   });
 
-  // remove filler words
   cleanQuery = cleanQuery.replace(
-    /\b(predict|next|next year|season|stats|stat|who|had|more|between|compare|how|is|what|which|consistent|consistency|elite|top|leader|leaders|best|most|highest|yards|tds|touchdowns)\b/g,
+    /\b(plot|graph|chart|visualize|trend|predict|next|next year|season|stats|stat|who|had|more|between|compare|how|is|what|which|consistent|consistency|elite|top|leader|leaders|best|most|highest|yards|tds|touchdowns)\b/g,
     ""
   );
 
-  cleanQuery = cleanQuery.replace(/\s+/g," ").trim();
+  cleanQuery = cleanQuery.replace(/\s+/g, " ").trim();
 
   if (!cleanQuery) return [];
 
   const playerNames = cleanQuery
-    .split(/\s+vs\s+|\s+v\s+|\s+versus\s+|\s+or\s+|\sand\s|,/)
+    .split(/\s+vs\s+|\s+v\s+|\s+versus\s+|\s+or\s+|\s+and\s+|,/)
     .map(s => s.trim())
     .filter(Boolean);
 
   const found = [];
 
   playerNames.forEach(name => {
-
-    // Exact match
-    let exact = players.find(
-      p =>
-        p.player_display_name
-          .toLowerCase()
-          .replace(/[.'"]/g, "") === name
+    const exact = players.find(
+      p => p.player_display_name.toLowerCase().replace(/[.'"]/g, "") === name
     );
 
     if (exact) {
@@ -314,13 +403,8 @@ function detectPlayers(q) {
       return;
     }
 
-    // Starts-with match
-    let startMatch = players.find(
-      p =>
-        p.player_display_name
-          .toLowerCase()
-          .replace(/[.'"]/g, "")
-          .startsWith(name)
+    const startMatch = players.find(
+      p => p.player_display_name.toLowerCase().replace(/[.'"]/g, "").startsWith(name)
     );
 
     if (startMatch) {
@@ -328,16 +412,13 @@ function detectPlayers(q) {
       return;
     }
 
-    // Fuzzy search fallback
     const results = fuse.search(name);
-
     if (results.length) {
       found.push(results[0].item.player_display_name);
     }
-
   });
 
-  return [...new Set(found)].slice(0,2);
+  return [...new Set(found)].slice(0, 2);
 }
 
 /* ================================
@@ -475,7 +556,7 @@ function generateResponse(question) {
   }
 
   /* TREND */
-  if (q.includes("trend") && statRequested && playersMentioned.length) {
+  if (!isChartQuery(q) && q.includes("trend") && statRequested && playersMentioned.length) {
     return analyzeTrend(playersMentioned[0], statRequested);
   }
 
@@ -630,6 +711,25 @@ function generateResponse(question) {
     return `Both players have identical career ${stat.replace("_"," ")}.`;
   }
 
+  /* TWO PLAYER COMPARISON CHART */
+  if (isChartQuery(q) && playersMentioned.length === 2 && statRequested) {
+    const [p1Name, p2Name] = playersMentioned;
+
+    const chart = buildComparisonTrendChart(p1Name, p2Name, statRequested);
+
+    if (!chart) {
+      return {
+        reply: `Not enough data to build a comparison chart for ${p1Name} and ${p2Name}.`
+      };
+    }
+
+    return {
+      type: "comparison_chart",
+      reply: `Here is the comparison chart for ${p1Name} vs ${p2Name} in ${statRequested.replace("def_", "").replaceAll("_", " ")}.`,
+      chart
+    };
+  }
+
   /* COMPARISON */
   if (playersMentioned.length === 2 && statRequested) {
     const [p1Name, p2Name] = playersMentioned;
@@ -671,6 +771,46 @@ function generateResponse(question) {
   `;
   }
 
+  /* CHART / TREND VISUALIZATION */
+  if (isChartQuery(q) && playersMentioned.length) {
+  let chartStat = statRequested;
+
+  if (!chartStat && q.includes("fantasy")) {
+    chartStat = "fantasy_points";
+  }
+
+  if (!chartStat) {
+    const playerSeasons = players.filter(
+      p => p.player_display_name === playersMentioned[0]
+    );
+
+    if (!playerSeasons.length) {
+      return { reply: "No data found for that player." };
+    }
+
+    const pos = playerSeasons[0].position;
+
+    if (pos === "QB") chartStat = "passing_yards";
+    else if (pos === "RB") chartStat = "rushing_yards";
+    else if (pos === "WR" || pos === "TE") chartStat = "receiving_yards";
+    else chartStat = "fantasy_points";
+  }
+
+  const chart = buildPlayerTrendChart(playersMentioned[0], chartStat);
+
+  if (!chart) {
+    return {
+      reply: `Not enough data to build a trend chart for ${playersMentioned[0]}.`
+    };
+  }
+
+  return {
+    type: "chart",
+    reply: `Here is the trend chart for ${playersMentioned[0]} in ${chartStat.replace("def_", "").replaceAll("_", " ")}.`,
+    chart
+  };
+  }
+
   /* SINGLE PLAYER LOOKUP */
   const playerCandidates = players.filter(
     p => p.player_display_name === playersMentioned[0]
@@ -710,9 +850,14 @@ app.post("/api/chat", async (req, res) => {
   if (!message) return res.status(400).json({ reply: "Please ask a question." });
 
   const cleanedMessage = await correctUserMessage(message);
-  const reply = generateResponse(cleanedMessage);
+  const result = generateResponse(cleanedMessage);
 
-  res.json({ reply });
+  if (typeof result === "string") {
+    return res.json({ reply: result });
+  }
+
+  return res.json(result);
+
 });
 
 /* ================================
