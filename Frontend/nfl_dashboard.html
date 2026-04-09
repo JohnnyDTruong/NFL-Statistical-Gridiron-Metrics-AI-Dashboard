@@ -29,6 +29,11 @@
 
 <!-- ===== PLAYER STATS TAB ===== -->
 <section id="playerStats" class="tab-content active">
+  <div class="tab-bg-video">
+    <video autoplay muted loop playsinline>
+      <source src="videos/NFL-Loop-Video.mp4" type="video/mp4">
+    </video>
+  </div>
   <div class="filters">
 
     <select id="teamSelect">
@@ -338,8 +343,10 @@
       <input type="text" id="chatInput" placeholder="Ask about a player (e.g., Patrick Mahomes 2023)">
       <button id="chatButton">Ask AI</button>
     </div>
+    <br>
+    <br>
     <div class="chat-suggestions">
-      <label for="chatSuggestions"><strong>Suggested questions</strong></label>
+      <label for="chatSuggestions"><strong>Suggested Questions</strong></label>
       <select id="chatSuggestions">
         <option value="">Choose a question to autofill...</option>
 
@@ -389,6 +396,15 @@
         <option>top qb yards passing</option>
         <option>is Justin Jefferson elite</option>
         <option>Who is better Tyreek Hill or Justin Jefferson</option>
+        <option>plot Patrick Mahomes passing yards</option>
+        <option>graph Travis Kelce receiving yards</option>
+        <option>visualize Lamar Jackson rushing yards</option>
+        <option>plot Patrick Mahomes fantasy points</option>
+        <option>chart Tee Higgins receiving yards</option>
+        <option>plot Patrick Mahomes vs Josh Allen passing yards</option>
+        <option>graph Travis Kelce versus George Kittle receiving yards</option>
+        <option>chart Lamar Jackson and Jalen Hurts rushing yards</option>
+        <option>plot Patrick Mahomes vs Lamar Jackson fantasy points</option>
       </select>
     </div>
   </div>
@@ -471,7 +487,6 @@
     </div>
   </div>
 </footer>
-
 
 <script src="nfl_script.js"></script>
 <script src="nfl_script_2.js"></script>

@@ -140,10 +140,10 @@ header p {
 }
 
 /* ===== SEARCHABLE PLAYER DROPDOWN ===== */
-.player-search-container {
+.search-wrapper {
   position: relative;
-  width: 220px;
-  z-index: 9999;
+  width: 100%;
+  z-index: 1000;
 }
 
 /* dropdown panel */
@@ -152,15 +152,12 @@ header p {
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-
   background: #1e293b;
   border: 1px solid rgba(34, 211, 238, 0.4);
   border-radius: 12px;
-
   max-height: 200px;
   overflow-y: auto;
-
-  z-index: 10000;
+  z-index: 9999;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
 }
 
@@ -203,18 +200,18 @@ header p {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-glow);
   box-shadow: 0 0 40px rgba(124, 58, 237, 0.1);
-
   width: 700px;
   height: 400px;
-
-  /* keep charts BELOW dropdown */
   position: relative;
-  z-index: 1;
+  z-index: 0;
+  overflow: visible;
 }
 
 .chart-container canvas {
   display: block;
   margin: 2rem auto;
+  position: relative;
+  z-index: 0;
 }
 
 /* ===== FOOTER ===== */
@@ -550,6 +547,7 @@ League Trends Charts
   border-top: 1px solid #222;
   padding: 20px 16px;
   font-size: 0.85rem;
+  margin-top: 100px;
   color: #aaa;
 }
 
@@ -630,7 +628,7 @@ NFL AI Chatbot Styling
 /* Chat Container Card */
 .chat-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   background: #141414;
   border-radius: 14px;
@@ -1084,4 +1082,76 @@ FANTASY TEAM BUILDER FILTERS
   outline: none;
   border-color: #00d4ff;
   box-shadow: 0 0 6px #00d4ff55;
+}
+
+.chat-chart-container {
+  margin-top: 16px;
+  min-height: 320px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #0f172a;
+  border: 1px solid #00d4ff;
+}
+
+.chart-message {
+  width: 100%;
+  max-width: 700px;
+  white-space: normal;
+}
+
+.chart-message-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.chat-inline-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  margin-top: 8px;
+}
+
+/* Background Loop Video */
+
+.tab-content {
+  position: relative;
+  overflow: visible;
+  z-index: 1;
+}
+
+.tab-bg-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.filters,
+.stats-table-section,
+.chat-container,
+.fantasy-container,
+#leagueResults,
+#trendAISummary,
+#seasonPredictions {
+  position: relative;
+  z-index: 5;
+}
+
+.tab-bg-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%; /* adjust this */
+  opacity: 0.3;
+  transform: scale(1.05);
+}
+
+.tab-bg-video::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(10, 20, 40, 0.25),
+    rgba(10, 20, 40, 0.45)
+  );
 }

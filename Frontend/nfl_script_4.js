@@ -1,5 +1,5 @@
 /* ============================================================
-NFL SCRIPT 5 – NFL CHAT AI TAB (Updated for Bubble UI + Predictions)
+NFL SCRIPT 4 – NFL CHAT AI TAB 
 ============================================================ */
 
 (() => {
@@ -11,6 +11,7 @@ NFL SCRIPT 5 – NFL CHAT AI TAB (Updated for Bubble UI + Predictions)
     const chatButton = document.getElementById("chatButton");
     const chatOutput = document.getElementById("chatOutput");
     const recentContainer = document.getElementById("recentQuestions"); // fixed ID
+    let chatTrendChart = null;
 
     if (!chatInput || !chatButton || !chatOutput) {
       console.log("NFL Chat elements not found.");
@@ -96,6 +97,9 @@ NFL SCRIPT 5 – NFL CHAT AI TAB (Updated for Bubble UI + Predictions)
           renderPlayerStats(data.data);
         } else if (data.type === "comparison") {
           renderComparison(data.data);
+        } else if ((data.type === "chart" || data.type === "comparison_chart") && data.chart) {
+          addMessage(data.reply, "ai");
+          renderChatChart(data.chart);
         } else if (data.reply) {
           addMessage(data.reply, "ai");
         } else {
@@ -160,6 +164,64 @@ NFL SCRIPT 5 – NFL CHAT AI TAB (Updated for Bubble UI + Predictions)
       if (p2.def_interceptions) output += `Interceptions: ${p2.def_interceptions}\n`;
 
       addMessage(output, "ai");
+    }
+
+    /* =========================================
+    RENDER TREND CHART/GRAPH
+    ========================================= */
+    function renderChatChart(chartData) {
+      const chartWrapper = document.createElement("div");
+      chartWrapper.classList.add("ai-msg", "chat-message", "chart-message");
+
+      const title = document.createElement("div");
+      title.classList.add("chart-message-title");
+      title.textContent = chartData.title;
+
+      const canvasWrapper = document.createElement("div");
+      canvasWrapper.classList.add("chat-inline-chart-wrapper");
+
+      const canvas = document.createElement("canvas");
+      canvasWrapper.appendChild(canvas);
+
+      chartWrapper.appendChild(title);
+      chartWrapper.appendChild(canvasWrapper);
+      chatOutput.appendChild(chartWrapper);
+
+      chatOutput.scrollTop = chatOutput.scrollHeight;
+
+      const ctx = canvas.getContext("2d");
+
+      const datasets = chartData.datasets || [{
+        label: chartData.title,
+        data: chartData.values,
+        borderWidth: 3,
+        tension: 0.3
+      }];
+
+      new Chart(ctx, {
+        type: chartData.chartType || "line",
+        data: {
+          labels: chartData.labels,
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true
+            },
+            datalabels: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
     }
 
     /* =========================================

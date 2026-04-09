@@ -1,92 +1,84 @@
 /* ============================================================
-NFL SCRIPT 5 – FANTASY TEAM BUILDER
+NFL SCRIPT 5 – FANTASY TEAM BUILDER TAB
 ============================================================ */
 
 (() => {
 
-  console.log("Fantasy Builder module loaded");
-  let editingTeamId = null;
-  document.addEventListener("DOMContentLoaded", () => {
+console.log("Fantasy Builder module loaded");
+let editingTeamId = null;
+document.addEventListener("DOMContentLoaded", () => {
 
     let players = [];
 
-    /* =========================================================
-    LOAD PLAYERS
-    ========================================================= */
+    /* LOAD PLAYERS */
 
     async function loadPlayers() {
 
-      const res = await fetch("stats_players_all.json");
-      players = await res.json();
+    const res = await fetch("stats_players_all.json");
+    players = await res.json();
 
-      /* keep most recent season */
-      players = players.filter(p => p.season === 2025);
+    /* keep most recent season */
+    players = players.filter(p => p.season === 2025);
 
-      populateAllLists();
-      updateTotals();
+    populateAllLists();
+    updateTotals();
     }
 
-    /* =========================================================
-    POPULATE DATALISTS
-    ========================================================= */
+    /* POPULATE DATALISTS */
 
     function populateList(listId, position) {
 
-      const list = document.getElementById(listId);
+    const list = document.getElementById(listId);
 
-      if (!list) return;
+    if (!list) return;
 
-      list.innerHTML = "";
+    list.innerHTML = "";
 
-      const filtered = players
+    const filtered = players
         .filter(p => p.position === position)
         .sort((a, b) => b.fantasy_points - a.fantasy_points);
 
-      filtered.forEach(player => {
+    filtered.forEach(player => {
 
         const option = document.createElement("option");
 
         option.value =
-          `${player.player_display_name} (${player.recent_team})`;
+        `${player.player_display_name} (${player.recent_team})`;
 
         list.appendChild(option);
 
-      });
+    });
 
     }
 
     function populateAllLists() {
 
-      populateList("qbList", "QB");
-      populateList("rbList", "RB");
-      populateList("wrList", "WR");
-      populateList("teList", "TE");
+    populateList("qbList", "QB");
+    populateList("rbList", "RB");
+    populateList("wrList", "WR");
+    populateList("teList", "TE");
 
     }
 
-    /* =========================================================
-    FIND PLAYER
-    ========================================================= */
+    /* FIND PLAYER */
 
     function getPlayer(name) {
 
-      if (!name) return null;
+    if (!name) return null;
 
-      const cleanName = name.split("(")[0].trim();
+    const cleanName = name.split("(")[0].trim();
 
-      return players.find(
+    return players.find(
         p => p.player_display_name === cleanName
-      );
+    );
 
     }
 
-    /* =========================================================
-    PREDICTED FANTASY CALCULATION
-    ========================================================= */
+    /* PREDICTED FANTASY CALCULATION */
 
     function calculatePredictedFantasy(player) {
 
-      let pts = 0;
+    let pts = 0;
 
       pts += (player.passing_yards || 0) * 0.04;
       pts += (player.passing_tds || 0) * 4;
@@ -99,13 +91,11 @@ NFL SCRIPT 5 – FANTASY TEAM BUILDER
       pts += (player.receiving_tds || 0) * 6;
       pts += (player.receptions || 0) * 1;
 
-      return pts;
+    return pts;
 
     }
 
-    /* =========================================================
-    GENERATE BEST LINEUP
-    ========================================================= */
+    /* GENERATE BEST LINEUP */
 
     function generateBestLineup() {
 
@@ -164,9 +154,7 @@ NFL SCRIPT 5 – FANTASY TEAM BUILDER
 
     }
 
-    /* =========================================================
-    CALCULATE TOTALS
-    ========================================================= */
+    /* CALCULATE TOTALS */
 
     function updateTotals() {
 
@@ -224,9 +212,7 @@ NFL SCRIPT 5 – FANTASY TEAM BUILDER
 
     }
 
-    /* =========================================================
-    TREND ANALYSIS
-    ========================================================= */
+    /* TREND ANALYSIS */
 
     function getTrend(player) {
 
@@ -239,9 +225,7 @@ NFL SCRIPT 5 – FANTASY TEAM BUILDER
 
     }
 
-    /* =========================================================
-    AI TEAM FEEDBACK
-    ========================================================= */
+    /* AI TEAM FEEDBACK */
 
     function generateTeamFeedback(selectedPlayers) {
 
@@ -287,9 +271,7 @@ NFL SCRIPT 5 – FANTASY TEAM BUILDER
 
     }
 
-    /* =========================================================
-    TEAM GRADE
-    ========================================================= */
+    /* TEAM GRADE */
 
     function getTeamGrade(score) {
 
@@ -308,43 +290,43 @@ NFL SCRIPT 5 – FANTASY TEAM BUILDER
 
     document.getElementById("saveTeamBtn").onclick = async () => {
 
-      const teamName =
+    const teamName =
         document.getElementById("teamName").value.trim();
 
-      if (!teamName) {
+    if (!teamName) {
         alert("Please enter a team name.");
         return;
-      }
+    }
 
-      const team = {
+    const team = {
         name: teamName,
 
         qb: document.getElementById("qbSelect").value,
 
         rb: [
-          document.getElementById("rb1Select").value,
-          document.getElementById("rb2Select").value
+        document.getElementById("rb1Select").value,
+        document.getElementById("rb2Select").value
         ],
 
         wr: [
-          document.getElementById("wr1Select").value,
-          document.getElementById("wr2Select").value,
-          document.getElementById("wr3Select").value
+        document.getElementById("wr1Select").value,
+        document.getElementById("wr2Select").value,
+        document.getElementById("wr3Select").value
         ],
 
         te: document.getElementById("teSelect").value,
 
         fantasyPoints: Number(
-          document.getElementById("fantasyTotal").textContent
+        document.getElementById("fantasyTotal").textContent
         ),
 
         prediction: Number(
-          document.getElementById("fantasyPrediction").textContent
+        document.getElementById("fantasyPrediction").textContent
         )
 
-      };
+    };
 
-      try {
+    try {
         console.log("Saving Team:", team);
         const url = editingTeamId
         ? `http://localhost:3001/api/fantasy/update/${editingTeamId}`
@@ -366,27 +348,27 @@ NFL SCRIPT 5 – FANTASY TEAM BUILDER
 
         if (res.ok) {
 
-          alert("Team Saved!");
-          editingTeamId = null;
-          document.getElementById("saveTeamBtn").textContent = "Save Team";  
-          loadSavedTeams();
-          document.getElementById("teamName").value = "";
-          document
+        alert("Team Saved!");
+        editingTeamId = null;
+        document.getElementById("saveTeamBtn").textContent = "Save Team";  
+        loadSavedTeams();
+        document.getElementById("teamName").value = "";
+        document
             .querySelectorAll("#fantasyBuilder input")
             .forEach(input => {
 
-              if (input.id !== "teamName") {
+            if (input.id !== "teamName") {
                 input.value = "";
-              }
+            }
             });
-          updateTotals();
+        updateTotals();
         }
 
-      } catch (err) {
+    } catch (err) {
 
         console.error(err);
         alert("Error saving team");
-      }
+    }
     };
 
     /* =========================================================
@@ -395,23 +377,23 @@ NFL SCRIPT 5 – FANTASY TEAM BUILDER
 
     const inputs = [
 
-      "qbSelect",
-      "rb1Select",
-      "rb2Select",
-      "wr1Select",
-      "wr2Select",
-      "wr3Select",
-      "teSelect"
+    "qbSelect",
+    "rb1Select",
+    "rb2Select",
+    "wr1Select",
+    "wr2Select",
+    "wr3Select",
+    "teSelect"
 
     ];
 
     inputs.forEach(id => {
 
-      const el = document.getElementById(id);
+    const el = document.getElementById(id);
 
-      if (el) {
+    if (el) {
         el.addEventListener("input", updateTotals);
-      }
+    }
 
     });
 
