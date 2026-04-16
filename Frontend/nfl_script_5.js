@@ -329,8 +329,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
         console.log("Saving Team:", team);
         const url = editingTeamId
-        ? `http://localhost:3001/api/fantasy/update/${editingTeamId}`
-        : "http://localhost:3001/api/fantasy/save";
+            ? `/api/fantasy/update/${editingTeamId}`
+            : `/api/fantasy/save`;
 
         const method = editingTeamId ? "PUT" : "POST";
 
@@ -423,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
 
-        const res = await fetch("http://localhost:3001/api/fantasy/all");
+        const res = await fetch("/api/fantasy/all");
         const teams = await res.json();
 
         const container = document.getElementById("displaySavedTeams");
@@ -549,8 +549,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
 
         await fetch(
-        `http://localhost:3001/api/fantasy/delete/${id}`,
-        { method: "DELETE" }
+            `/api/fantasy/delete/${id}`,
+            { method: "DELETE" }
         );
 
         loadSavedTeams();
