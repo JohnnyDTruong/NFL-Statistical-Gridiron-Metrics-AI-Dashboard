@@ -32,6 +32,10 @@ LOAD NFL DATA
 const frontendPath = path.join(__dirname, "../Frontend");
 app.use(express.static(frontendPath));
 
+app.get("/", (req, res) => {
+  res.sendFile(path.join(frontendPath, "nfl_dashboard.html"));
+});
+
 const dataPath = path.join(frontendPath, "stats_players_all.json");
 const players = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
 console.log("Loaded players:", players.length);
