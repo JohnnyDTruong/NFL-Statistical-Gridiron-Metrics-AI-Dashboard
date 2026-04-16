@@ -632,8 +632,8 @@ function renderCompareCharts() {
 
           datalabels: {
             color: "#ffffff",
-            anchor: "end",
-            align: "start",
+            anchor: "center",
+            align: "center",
             clamp: true,
             offset: 16,
             font: {

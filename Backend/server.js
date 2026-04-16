@@ -24,7 +24,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 /* ================================
 LOAD NFL DATA
@@ -171,6 +171,29 @@ function detectIntent(q) {
 /* ================================
 HELPER FUNCTIONS
 ================================ */
+
+const statPositionMap = {
+  passing_yards: ["QB"],
+  passing_tds: ["QB"],
+
+  rushing_yards: ["QB", "RB"],
+  rushing_tds: ["QB", "RB"],
+
+  receiving_yards: ["WR", "TE", "RB"],
+  receiving_tds: ["WR", "TE", "RB"],
+  receptions: ["WR", "TE", "RB"],
+  targets: ["WR", "TE", "RB"],
+
+  def_interceptions: ["CB", "DB", "FS", "SS", "LB", "OLB", "ILB"],
+  def_sacks: ["DE", "DT", "NT", "LB", "OLB", "ILB"],
+  def_tackles_solo: ["CB", "DB", "FS", "SS", "LB", "OLB", "ILB", "DE", "DT", "NT"],
+  def_pass_defended: ["CB", "DB", "FS", "SS", "LB", "OLB", "ILB"],
+  def_tackle_assists: ["CB", "DB", "FS", "SS", "LB", "OLB", "ILB", "DE", "DT", "NT"],
+  def_fumbles_forced: ["CB", "DB", "FS", "SS", "LB", "OLB", "ILB", "DE", "DT", "NT"],
+
+  fantasy_points: ["QB", "RB", "WR", "TE"]
+};
+
 function getStat(player, key) {
   return Number(player[key]) || 0;
 }
@@ -217,6 +240,26 @@ function isChartQuery(q) {
     q.includes("visualize") ||
     q.includes("plot") ||
     q.includes("trend line")
+  );
+}
+
+function getLeagueBestSeason(stat) {
+  const allowedPositions = statPositionMap[stat] || null;
+
+  let filtered = players.filter(p =>
+    getStat(p, stat) > 0 &&
+    Number(p.season) >= 2022 &&
+    Number(p.season) <= 2025
+  );
+
+  if (allowedPositions) {
+    filtered = filtered.filter(p => allowedPositions.includes(p.position));
+  }
+
+  if (!filtered.length) return null;
+
+  return filtered.reduce((best, current) =>
+    getStat(current, stat) > getStat(best, stat) ? current : best
   );
 }
 
@@ -549,10 +592,30 @@ function generateResponse(question) {
   }
 
   /* BEST SEASON */
-  if ((q.includes("best season") || q.includes("highest season")) && statRequested && playersMentioned.length) {
-    const best = getBestSeason(playersMentioned[0], statRequested);
-    if (!best) return "No season data found.";
-    return `🔥 Best season for ${playersMentioned[0]}: ${best.season} with ${getStat(best, statRequested)} ${statRequested.replace("_"," ")}`;
+  const isBestSeasonQuery =
+  q.includes("best season") ||
+  q.includes("highest season") ||
+  (q.includes("best") && q.includes("season")) ||
+  (q.includes("who had the best") && !!statRequested);
+
+  if (isBestSeasonQuery && statRequested) {
+    const isOverallQuery =
+      q.includes("who had") ||
+      q.includes("best overall") ||
+      q.includes("in the league") ||
+      q.includes("overall");
+
+    if (!isOverallQuery && playersMentioned.length > 0) {
+      const best = getBestSeason(playersMentioned[0], statRequested);
+      if (!best) return "No season data found.";
+
+      return `🔥 Best season for ${playersMentioned[0]}: ${best.season} with ${getStat(best, statRequested)} ${statRequested.replace(/_/g, " ")}`;
+    }
+
+    const bestOverall = getLeagueBestSeason(statRequested);
+    if (!bestOverall) return "No season data found.";
+
+    return `🔥 Best overall season for ${statRequested.replace(/_/g, " ")}: ${bestOverall.player_display_name} in ${bestOverall.season} with ${getStat(bestOverall, statRequested)}.`;
   }
 
   /* TREND */
@@ -873,4 +936,3 @@ app.listen(PORT, () => {
 
 const fantasyRoutes = require("./routes/fantasy");
 app.use("/api/fantasy", fantasyRoutes);
-

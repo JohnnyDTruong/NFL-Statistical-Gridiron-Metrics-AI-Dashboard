@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="nfl_style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -23,6 +24,7 @@
   <div class="tab" data-tab="leagueAvg">League Averages</div>
   <div class="tab" data-tab="nflchat">NFL Chat Bot</div>
   <div class="tab" data-tab="fantasyBuilder">Fantasy Team Builder</div>
+  <div class="tab" data-tab="playerGallery">Player Gallery</div>
 </section>
 
 <button id="refreshPageBtn" class="refresh-btn">↻ Refresh</button>
@@ -134,6 +136,11 @@
 
 <!-- ===== PLAYER COMPARISON TAB ===== -->
 <section id="playerCompare" class="tab-content">
+  <div class="tab-bg-video">
+    <video autoplay muted loop playsinline>
+      <source src="videos/NFL-Edit-1.mp4" type="video/mp4">
+    </video>
+  </div>
   <div class="filters">
 
     <select id="compareSeasonSelect">
@@ -405,6 +412,9 @@
         <option>graph Travis Kelce versus George Kittle receiving yards</option>
         <option>chart Lamar Jackson and Jalen Hurts rushing yards</option>
         <option>plot Patrick Mahomes vs Lamar Jackson fantasy points</option>
+        <option> best season for Sam Darnold passing tds </option>
+        <option> who had the best season for rushing yards </option>
+        <option> best season for justin jefferson receiving yards </option>
       </select>
     </div>
   </div>
@@ -465,6 +475,80 @@
   </div>
 </section>
 
+<!-- ===== PLAYER GALLERY TAB ===== -->
+
+<section id="playerGallery" class="tab-content">
+  <div class="player-gallery-header">
+    <h2>🏈 Player Gallery 🏈</h2>
+    <p>Browse NFL players by season, team, and position</p>
+  </div>
+
+  <div class="filters">
+    <select id="gallerySeasonSelect">
+      <option value="">Select Season</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+      <option value="2022">2022</option>
+    </select>
+
+    <select id="galleryTeamSelect">
+      <option value="">All Teams</option>
+      <option value="ARI">Arizona Cardinals</option>
+      <option value="ATL">Atlanta Falcons</option>
+      <option value="BAL">Baltimore Ravens</option>
+      <option value="BUF">Buffalo Bills</option>
+      <option value="CAR">Carolina Panthers</option>
+      <option value="CHI">Chicago Bears</option>
+      <option value="CIN">Cincinnati Bengals</option>
+      <option value="CLE">Cleveland Browns</option>
+      <option value="DAL">Dallas Cowboys</option>
+      <option value="DEN">Denver Broncos</option>
+      <option value="DET">Detroit Lions</option>
+      <option value="GB">Green Bay Packers</option>
+      <option value="HOU">Houston Texans</option>
+      <option value="IND">Indianapolis Colts</option>
+      <option value="JAX">Jacksonville Jaguars</option>
+      <option value="KC">Kansas City Chiefs</option>
+      <option value="LV">Las Vegas Raiders</option>
+      <option value="LAC">Los Angeles Chargers</option>
+      <option value="LA">Los Angeles Rams</option>
+      <option value="MIA">Miami Dolphins</option>
+      <option value="MIN">Minnesota Vikings</option>
+      <option value="NE">New England Patriots</option>
+      <option value="NO">New Orleans Saints</option>
+      <option value="NYG">New York Giants</option>
+      <option value="NYJ">New York Jets</option>
+      <option value="PHI">Philadelphia Eagles</option>
+      <option value="PIT">Pittsburgh Steelers</option>
+      <option value="SEA">Seattle Seahawks</option>
+      <option value="SF">San Francisco 49ers</option>
+      <option value="TB">Tampa Bay Buccaneers</option>
+      <option value="TEN">Tennessee Titans</option>
+      <option value="WAS">Washington Commanders</option>
+    </select>
+
+    <select id="galleryPositionSelect">
+      <option value="">All Positions</option>
+      <option value="QB">QB</option>
+      <option value="RB">RB</option>
+      <option value="WR">WR</option>
+      <option value="TE">TE</option>
+      <option value="DB">DB</option>
+      <option value="LB">LB</option>
+      <option value="DL">DL</option>
+      <option value="CB">CB</option>
+      <option value="SAF">S</option>
+      <option value="DE">DE</option>
+      <option value="DT">DT</option>
+      <option value="OLB">OLB</option>
+      <option value="ILB">ILB</option>
+    </select>
+  </div>
+
+  <div id="playerGalleryGrid" class="player-gallery-grid"></div>
+</section>
+
 <button id="backToTopBtn" class="back-to-top-btn"> ⬆ </button>
 
 <footer class="site-footer">
@@ -493,6 +577,7 @@
 <script src="nfl_script_3.js"></script>
 <script src="nfl_script_4.js"></script>
 <script src="nfl_script_5.js"></script>
+<script src="nfl_script_6.js"></script>
 
 </body>
 </html>
