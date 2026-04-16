@@ -1,5 +1,7 @@
 NFL Statistical Gridiron Metrics AI Dashboard
 
+Live Demo: https://nfl-statistical-gridiron-metrics-ai.onrender.com/
+
 An AI-powered, full-stack web application designed to analyze and visualize NFL player statistics in an interactive and intuitive way. This dashboard enables users to explore player performance, compare athletes, generate trends, and receive AI-driven insights using natural language queries.
 
 Features:
