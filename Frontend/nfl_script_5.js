@@ -298,32 +298,49 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    const team = {
+    const selectedPlayers = [
+        getPlayer(document.getElementById("qbSelect").value),
+        getPlayer(document.getElementById("rb1Select").value),
+        getPlayer(document.getElementById("rb2Select").value),
+        getPlayer(document.getElementById("wr1Select").value),
+        getPlayer(document.getElementById("wr2Select").value),
+        getPlayer(document.getElementById("wr3Select").value),
+        getPlayer(document.getElementById("teSelect").value)
+        ].filter(Boolean);
+
+        const fantasyPoints = Number(
+        document.getElementById("fantasyTotal").textContent
+        );
+
+        const prediction = Number(
+        document.getElementById("fantasyPrediction").textContent
+        );
+
+        const grade = getTeamGrade(fantasyPoints);
+        const feedback = generateTeamFeedback(selectedPlayers);
+
+        const team = {
         name: teamName,
 
         qb: document.getElementById("qbSelect").value,
 
         rb: [
-        document.getElementById("rb1Select").value,
-        document.getElementById("rb2Select").value
+            document.getElementById("rb1Select").value,
+            document.getElementById("rb2Select").value
         ],
 
         wr: [
-        document.getElementById("wr1Select").value,
-        document.getElementById("wr2Select").value,
-        document.getElementById("wr3Select").value
+            document.getElementById("wr1Select").value,
+            document.getElementById("wr2Select").value,
+            document.getElementById("wr3Select").value
         ],
 
         te: document.getElementById("teSelect").value,
 
-        fantasyPoints: Number(
-        document.getElementById("fantasyTotal").textContent
-        ),
-
-        prediction: Number(
-        document.getElementById("fantasyPrediction").textContent
-        )
-
+        fantasyPoints,
+        prediction,
+        grade,
+        feedback
     };
 
     try {
@@ -456,14 +473,14 @@ document.addEventListener("DOMContentLoaded", () => {
         div.className = "saved-team";
 
         const teamPlayers = [
-        getPlayer(team.qb),
-        ...team.rb.map(getPlayer),
-        ...team.wr.map(getPlayer),
-        getPlayer(team.te)
+            getPlayer(team.qb),
+            ...team.rb.map(getPlayer),
+            ...team.wr.map(getPlayer),
+            getPlayer(team.te)
         ];
 
-        const grade = getTeamGrade(team.fantasyPoints);
-        const feedback = generateTeamFeedback(teamPlayers);
+        const grade = team.grade || getTeamGrade(team.fantasyPoints);
+        const feedback = team.feedback || generateTeamFeedback(teamPlayers);
 
         div.innerHTML = `
 
