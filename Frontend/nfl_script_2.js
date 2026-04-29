@@ -20,6 +20,7 @@ NFL SCRIPT 2 - SEASON TRENDS TAB (AI-ENHANCED)
 
   let trendChart = null;
   let selectedPlayer = null;
+  let editingTrendSelectionId = null;
 
   // ===== DATA SOURCE =====
   const getAllPlayers = () => window.allPlayers || [];
@@ -245,7 +246,7 @@ NFL SCRIPT 2 - SEASON TRENDS TAB (AI-ENHANCED)
 
   let avg = deltas.reduce((a, b) => a + b, 0) / deltas.length;
 
-  // 🔒 QB volatility clamp
+  // QB volatility clamp
   if (position === "QB") {
     avg = Math.max(-0.25, Math.min(avg, 0.25));
   }
@@ -458,95 +459,234 @@ NFL SCRIPT 2 - SEASON TRENDS TAB (AI-ENHANCED)
         floor,
         expected: clamp(expected),
         ceiling,
-     yoy
+        yoy
     };
   }
 
 
   // ===== RENDER AI TABLE =====
-function renderSeasonPredictions(seasons) {
-  if (seasons.length < 2) {
-    predictionContainer.innerHTML = `<p>Not enough seasons for AI predictions.</p>`;
-    return;
+  function renderSeasonPredictions(seasons) {
+    if (seasons.length < 2) {
+      predictionContainer.innerHTML = `<p>Not enough seasons for AI predictions.</p>`;
+      return;
+    }
+
+    const pos = seasons[0].position;
+
+    let cleanSeasons = seasons;
+
+      if (pos === "QB") {
+      cleanSeasons = filterValidQBSeasons(seasons);
+      }
+
+      if (cleanSeasons.length < 2) {
+      predictionContainer.innerHTML =
+          `<p>Not enough starter-level seasons for reliable AI projections.</p>`;
+      return;
+      }
+
+      const stats = positionStats(pos, cleanSeasons);
+
+    const rows = Object.entries(stats).map(([stat, values]) => {
+      let projection;
+
+      const volumeStats = [
+        "Carries",
+        "Rushing Yards",
+        "Receptions",
+        "Targets",
+        "Passing Attempts",
+        "Fantasy Points"
+      ];
+
+      if (stat === "Rushing TDs") {
+        projection = projectRushingTDs(seasons);
+      } else if (volumeStats.includes(stat)) {
+        projection = stabilizeVolume(values, pos, stat);
+      } else if (pos === "QB" && ["Passing Yards", "Passing TDs", "INTs", "Sacks Taken"].includes(stat)) {
+        projection = projectQBStat(values, stat);
+      } else {
+        projection = projectRange(values);
+      }
+
+      const { floor, expected, ceiling, yoy } = projection;
+      const confidence = confidenceFromYoY(yoy, pos);
+
+      const trend =
+        yoy > 0.02 ? "Increasing" :
+        yoy < -0.02 ? "Decreasing" :
+        "Stable";
+
+      return `
+        <tr>
+          <td>${stat}</td>
+          <td>${trend}</td>
+          <td>${(yoy * 100).toFixed(2)}%</td>
+          <td>${floor} / <strong>${expected}</strong> / ${ceiling}</td>
+          <td>${confidence.value} (${confidence.label})</td>
+        </tr>
+      `;
+    }).join("");
+
+    predictionContainer.innerHTML = `
+      <div class="prediction-card">
+        <h3>AI Season Projections (Next Season)</h3>
+        <table class="prediction-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Trend</th>
+              <th>YoY %</th>
+              <th>Floor / Expected / Ceiling</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
   }
 
-  const pos = seasons[0].position;
+  // Save/edit/delete btn for SEASON TREND TAB
 
-  let cleanSeasons = seasons;
+  async function loadSavedTrendSelections() {
+    const dropdown = document.getElementById("savedTrendDropdown");
+    if (!dropdown) return;
 
-    if (pos === "QB") {
-    cleanSeasons = filterValidQBSeasons(seasons);
+    const res = await fetch("/api/trend-selections/all");
+    const selections = await res.json();
+
+    dropdown.innerHTML = `<option value="">Load saved trend...</option>`;
+
+    selections.forEach(selection => {
+      const option = document.createElement("option");
+      option.value = selection._id;
+      option.textContent = selection.name;
+      option.dataset.selection = JSON.stringify(selection);
+      dropdown.appendChild(option);
+    });
+  }
+
+  document.getElementById("saveTrendSelectionBtn")?.addEventListener("click", async () => {
+    const name = document.getElementById("trendSelectionNameInput").value.trim();
+
+    if (!name) {
+      alert("Please name this trend.");
+      return;
     }
 
-    if (cleanSeasons.length < 2) {
-    predictionContainer.innerHTML =
-        `<p>Not enough starter-level seasons for reliable AI projections.</p>`;
-    return;
+    const selection = {
+      name,
+      startSeason: document.getElementById("trendSeasonStart").value,
+      endSeason: document.getElementById("trendSeasonEnd").value,
+      team: document.getElementById("trendTeamSelect").value,
+      position: document.getElementById("trendPositionSelect").value,
+      player: document.getElementById("trendPlayerSearch").value
+    };
+
+    const url = editingTrendSelectionId
+      ? `/api/trend-selections/update/${editingTrendSelectionId}`
+      : "/api/trend-selections/save";
+
+    const method = editingTrendSelectionId ? "PUT" : "POST";
+
+    await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(selection)
+    });
+
+    alert(editingTrendSelectionId ? "Trend updated!" : "Trend saved!");
+
+    editingTrendSelectionId = null;
+    document.getElementById("saveTrendSelectionBtn").textContent = "Save Trend";
+    document.getElementById("trendSelectionNameInput").value = "";
+
+    loadSavedTrendSelections();
+  });
+
+  document.getElementById("savedTrendDropdown")?.addEventListener("change", e => {
+    const selectedOption = e.target.selectedOptions[0];
+    if (!selectedOption || !selectedOption.dataset.selection) return;
+
+    const selection = JSON.parse(selectedOption.dataset.selection);
+
+    startSelect.value = selection.startSeason || "";
+    endSelect.value = selection.endSeason || "";
+    teamSelect.value = selection.team || "";
+    positionSelect.value = selection.position || "";
+
+    validateSeasonRange();
+
+    setTimeout(() => {
+      selectedPlayer = selection.player || "";
+      playerInput.value = selection.player || "";
+
+      renderTrendChart();
+    }, 100);
+  });
+
+  document.getElementById("editTrendSelectionBtn")?.addEventListener("click", () => {
+    const dropdown = document.getElementById("savedTrendDropdown");
+    const selectedOption = dropdown.selectedOptions[0];
+
+    if (!selectedOption || !selectedOption.dataset.selection) {
+      alert("Please choose a saved trend to edit.");
+      return;
     }
 
-    const stats = positionStats(pos, cleanSeasons);
+    const selection = JSON.parse(selectedOption.dataset.selection);
 
-  const rows = Object.entries(stats).map(([stat, values]) => {
-    let projection;
+    editingTrendSelectionId = selection._id;
 
-    const volumeStats = [
-      "Carries",
-      "Rushing Yards",
-      "Receptions",
-      "Targets",
-      "Passing Attempts",
-      "Fantasy Points"
-    ];
+    document.getElementById("trendSelectionNameInput").value = selection.name || "";
 
-    if (stat === "Rushing TDs") {
-      projection = projectRushingTDs(seasons);
-    } else if (volumeStats.includes(stat)) {
-      projection = stabilizeVolume(values, pos, stat);
-    } else if (pos === "QB" && ["Passing Yards", "Passing TDs", "INTs", "Sacks Taken"].includes(stat)) {
-      projection = projectQBStat(values, stat);
-    } else {
-      projection = projectRange(values);
+    startSelect.value = selection.startSeason || "";
+    endSelect.value = selection.endSeason || "";
+    teamSelect.value = selection.team || "";
+    positionSelect.value = selection.position || "";
+
+    validateSeasonRange();
+
+    setTimeout(() => {
+      selectedPlayer = selection.player || "";
+      playerInput.value = selection.player || "";
+
+      renderTrendChart();
+    }, 100);
+
+    document.getElementById("saveTrendSelectionBtn").textContent = "Update Trend";
+  });
+
+  document.getElementById("deleteTrendSelectionBtn")?.addEventListener("click", async () => {
+    const dropdown = document.getElementById("savedTrendDropdown");
+    const selectedOption = dropdown.selectedOptions[0];
+
+    if (!selectedOption || !selectedOption.dataset.selection) {
+      alert("Please choose a saved trend to delete.");
+      return;
     }
 
-    const { floor, expected, ceiling, yoy } = projection;
-    const confidence = confidenceFromYoY(yoy, pos);
+    const selection = JSON.parse(selectedOption.dataset.selection);
 
-    const trend =
-      yoy > 0.02 ? "Increasing" :
-      yoy < -0.02 ? "Decreasing" :
-      "Stable";
+    if (!confirm(`Delete saved trend "${selection.name}"?`)) return;
 
-    return `
-      <tr>
-        <td>${stat}</td>
-        <td>${trend}</td>
-        <td>${(yoy * 100).toFixed(2)}%</td>
-        <td>${floor} / <strong>${expected}</strong> / ${ceiling}</td>
-        <td>${confidence.value} (${confidence.label})</td>
-      </tr>
-    `;
-  }).join("");
+    await fetch(`/api/trend-selections/delete/${selection._id}`, {
+      method: "DELETE"
+    });
 
-  predictionContainer.innerHTML = `
-    <div class="prediction-card">
-      <h3>AI Season Projections (Next Season)</h3>
-      <table class="prediction-table">
-        <thead>
-          <tr>
-            <th>Metric</th>
-            <th>Trend</th>
-            <th>YoY %</th>
-            <th>Floor / Expected / Ceiling</th>
-            <th>Confidence</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  `;
-}
+    alert("Trend deleted.");
+
+    editingTrendSelectionId = null;
+    document.getElementById("saveTrendSelectionBtn").textContent = "Save Trend";
+    document.getElementById("trendSelectionNameInput").value = "";
+
+    loadSavedTrendSelections();
+  });
+
+  loadSavedTrendSelections();
 
 
 })();
-
-//553 LOC

@@ -4,6 +4,8 @@ NFL SCRIPT - PLAYER STATS AND COMPARISON TABS
 
 let allPlayers = [];
 let charts = {}; // store chart instances
+let editingSelectionId = null;
+let editingComparisonSelectionId = null;
 Chart.register(ChartDataLabels);
 
 // ===== DOM Elements =====
@@ -525,6 +527,149 @@ function renderAdvancedStatsTable(player, position) {
   });
 }
 
+/* save/edit/delete btn for Saving Selections */
+
+async function loadSavedPlayerSelections() {
+  const dropdown = document.getElementById("savedSelectionsDropdown");
+  if (!dropdown) return;
+
+  const res = await fetch("/api/player-selections/all");
+  const selections = await res.json();
+
+  dropdown.innerHTML = `<option value="">Load saved selection...</option>`;
+
+  selections.forEach(selection => {
+    const option = document.createElement("option");
+    option.value = selection._id;
+    option.textContent = selection.name;
+    option.dataset.selection = JSON.stringify(selection);
+    dropdown.appendChild(option);
+  });
+}
+
+document.getElementById("savePlayerSelectionBtn")?.addEventListener("click", async () => {
+  const name = document.getElementById("selectionNameInput").value.trim();
+
+  if (!name) {
+    alert("Please name this selection.");
+    return;
+  }
+
+  const selection = {
+    name,
+    team: document.getElementById("teamSelect").value,
+    position: document.getElementById("positionSelect").value,
+    season: document.getElementById("seasonSelect").value,
+    player: document.getElementById("playerSelect").value
+  };
+
+  const url = editingSelectionId
+    ? `/api/player-selections/update/${editingSelectionId}`
+    : "/api/player-selections/save";
+
+  const method = editingSelectionId ? "PUT" : "POST";
+
+  await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(selection)
+  });
+
+  alert(editingSelectionId ? "Selection updated!" : "Selection saved!");
+
+  editingSelectionId = null;
+  document.getElementById("savePlayerSelectionBtn").textContent = "Save Selection";
+  document.getElementById("selectionNameInput").value = "";
+
+  loadSavedPlayerSelections();
+});
+
+document.getElementById("savedSelectionsDropdown")?.addEventListener("change", e => {
+  const selectedOption = e.target.selectedOptions[0];
+  if (!selectedOption || !selectedOption.dataset.selection) return;
+
+  const selection = JSON.parse(selectedOption.dataset.selection);
+
+  const team = document.getElementById("teamSelect");
+  const position = document.getElementById("positionSelect");
+  const season = document.getElementById("seasonSelect");
+  const playerInput = document.getElementById("playerSelect");
+
+  team.value = selection.team || "";
+  position.value = selection.position || "";
+  season.value = selection.season || "";
+
+  team.dispatchEvent(new Event("change"));
+  position.dispatchEvent(new Event("change"));
+  season.dispatchEvent(new Event("change"));
+
+  setTimeout(() => {
+    playerInput.value = selection.player || "";
+    renderPlayerCharts();
+  }, 100);
+});
+
+document.getElementById("editPlayerSelectionBtn")?.addEventListener("click", () => {
+  const dropdown = document.getElementById("savedSelectionsDropdown");
+  const selectedOption = dropdown.selectedOptions[0];
+
+  if (!selectedOption || !selectedOption.dataset.selection) {
+    alert("Please choose a saved selection to edit.");
+    return;
+  }
+
+  const selection = JSON.parse(selectedOption.dataset.selection);
+
+  editingSelectionId = selection._id;
+
+  document.getElementById("selectionNameInput").value = selection.name || "";
+
+  document.getElementById("teamSelect").value = selection.team || "";
+  document.getElementById("positionSelect").value = selection.position || "";
+  document.getElementById("seasonSelect").value = selection.season || "";
+
+  document.getElementById("teamSelect").dispatchEvent(new Event("change"));
+  document.getElementById("positionSelect").dispatchEvent(new Event("change"));
+  document.getElementById("seasonSelect").dispatchEvent(new Event("change"));
+
+  setTimeout(() => {
+    document.getElementById("playerSelect").value = selection.player || "";
+    renderPlayerCharts();
+  }, 100);
+
+  document.getElementById("savePlayerSelectionBtn").textContent = "Update Selection";
+});
+
+document.getElementById("deletePlayerSelectionBtn")?.addEventListener("click", async () => {
+  const dropdown = document.getElementById("savedSelectionsDropdown");
+  const selectedOption = dropdown.selectedOptions[0];
+
+  if (!selectedOption || !selectedOption.dataset.selection) {
+    alert("Please choose a saved selection to delete.");
+    return;
+  }
+
+  const selection = JSON.parse(selectedOption.dataset.selection);
+
+  if (!confirm(`Delete saved selection "${selection.name}"?`)) return;
+
+  await fetch(`/api/player-selections/delete/${selection._id}`, {
+    method: "DELETE"
+  });
+
+  alert("Selection deleted.");
+
+  editingSelectionId = null;
+  document.getElementById("savePlayerSelectionBtn").textContent = "Save Selection";
+  document.getElementById("selectionNameInput").value = "";
+
+  loadSavedPlayerSelections();
+});
+
+document.addEventListener("DOMContentLoaded", loadSavedPlayerSelections);
+
 // ===== COMPARISON CHARTS =====
 function renderCompareCharts() {
   const season = Number(compareSeasonSelect.value);
@@ -681,6 +826,144 @@ function renderComparisonAdvancedStats(playerA, playerB, position) {
   });
 }
 
+//SAVE BTN FOR PLAYER COMPARISON TAB
+
+async function loadSavedComparisonSelections() {
+  const dropdown = document.getElementById("savedComparisonDropdown");
+  if (!dropdown) return;
+
+  const res = await fetch("/api/comparison-selections/all");
+  const selections = await res.json();
+
+  dropdown.innerHTML = `<option value="">Load saved comparison...</option>`;
+
+  selections.forEach(selection => {
+    const option = document.createElement("option");
+    option.value = selection._id;
+    option.textContent = selection.name;
+    option.dataset.selection = JSON.stringify(selection);
+    dropdown.appendChild(option);
+  });
+}
+
+document.getElementById("saveComparisonSelectionBtn")?.addEventListener("click", async () => {
+  const name = document.getElementById("comparisonSelectionNameInput").value.trim();
+
+  if (!name) {
+    alert("Please name this comparison.");
+    return;
+  }
+
+  const selection = {
+    name,
+    season: document.getElementById("compareSeasonSelect").value,
+    position: document.getElementById("comparePositionSelect").value,
+    player1: document.getElementById("comparePlayer1").value,
+    player2: document.getElementById("comparePlayer2").value
+  };
+
+  const url = editingComparisonSelectionId
+    ? `/api/comparison-selections/update/${editingComparisonSelectionId}`
+    : "/api/comparison-selections/save";
+
+  const method = editingComparisonSelectionId ? "PUT" : "POST";
+
+  await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(selection)
+  });
+
+  alert(editingComparisonSelectionId ? "Comparison updated!" : "Comparison saved!");
+
+  editingComparisonSelectionId = null;
+  document.getElementById("saveComparisonSelectionBtn").textContent = "Save Comparison";
+  document.getElementById("comparisonSelectionNameInput").value = "";
+
+  loadSavedComparisonSelections();
+});
+
+document.getElementById("savedComparisonDropdown")?.addEventListener("change", e => {
+  const selectedOption = e.target.selectedOptions[0];
+  if (!selectedOption || !selectedOption.dataset.selection) return;
+
+  const selection = JSON.parse(selectedOption.dataset.selection);
+
+  compareSeasonSelect.value = selection.season || "";
+  comparePositionSelect.value = selection.position || "";
+
+  compareSeasonSelect.dispatchEvent(new Event("change"));
+  comparePositionSelect.dispatchEvent(new Event("change"));
+
+  setTimeout(() => {
+    comparePlayer1Input.value = selection.player1 || "";
+    comparePlayer2Input.value = selection.player2 || "";
+
+    renderCompareCharts();
+  }, 100);
+});
+
+document.getElementById("editComparisonSelectionBtn")?.addEventListener("click", () => {
+  const dropdown = document.getElementById("savedComparisonDropdown");
+  const selectedOption = dropdown.selectedOptions[0];
+
+  if (!selectedOption || !selectedOption.dataset.selection) {
+    alert("Please choose a saved comparison to edit.");
+    return;
+  }
+
+  const selection = JSON.parse(selectedOption.dataset.selection);
+
+  editingComparisonSelectionId = selection._id;
+
+  document.getElementById("comparisonSelectionNameInput").value = selection.name || "";
+
+  compareSeasonSelect.value = selection.season || "";
+  comparePositionSelect.value = selection.position || "";
+
+  compareSeasonSelect.dispatchEvent(new Event("change"));
+  comparePositionSelect.dispatchEvent(new Event("change"));
+
+  setTimeout(() => {
+    comparePlayer1Input.value = selection.player1 || "";
+    comparePlayer2Input.value = selection.player2 || "";
+
+    renderCompareCharts();
+  }, 100);
+
+  document.getElementById("saveComparisonSelectionBtn").textContent = "Update Comparison";
+});
+
+document.getElementById("deleteComparisonSelectionBtn")?.addEventListener("click", async () => {
+  const dropdown = document.getElementById("savedComparisonDropdown");
+  const selectedOption = dropdown.selectedOptions[0];
+
+  if (!selectedOption || !selectedOption.dataset.selection) {
+    alert("Please choose a saved comparison to delete.");
+    return;
+  }
+
+  const selection = JSON.parse(selectedOption.dataset.selection);
+
+  if (!confirm(`Delete saved comparison "${selection.name}"?`)) return;
+
+  await fetch(`/api/comparison-selections/delete/${selection._id}`, {
+    method: "DELETE"
+  });
+
+  alert("Comparison deleted.");
+
+  editingComparisonSelectionId = null;
+  document.getElementById("saveComparisonSelectionBtn").textContent = "Save Comparison";
+  document.getElementById("comparisonSelectionNameInput").value = "";
+
+  loadSavedComparisonSelections();
+});
+
+document.addEventListener("DOMContentLoaded", loadSavedComparisonSelections);
+
 // ===== EVENT LISTENERS =====
 teamSelect.addEventListener("change", () => { updatePlayerDropdown(); renderPlayerCharts(); });
 positionSelect.addEventListener("change", () => { updatePlayerDropdown(); renderPlayerCharts(); });
@@ -762,5 +1045,3 @@ attachSearch(comparePlayer2Input, compareDropdown2, renderCompareCharts);
 
 // ===== INIT =====
 loadPlayersJSON();
-
-// 767 LOC

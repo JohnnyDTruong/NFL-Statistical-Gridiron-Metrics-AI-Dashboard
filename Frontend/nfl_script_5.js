@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let players = [];
 
     /* LOAD PLAYERS */
-
     async function loadPlayers() {
 
     const res = await fetch("stats_players_all.json");
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* POPULATE DATALISTS */
-
     function populateList(listId, position) {
 
     const list = document.getElementById(listId);

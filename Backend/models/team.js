@@ -15,7 +15,6 @@ const teamSchema = new mongoose.Schema({
     fantasyPoints: Number,
     prediction: Number,
 
-    // 🔥 ADD THESE
     grade: String,
     feedback: [String]
 

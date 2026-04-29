@@ -40,7 +40,6 @@
 
     <select id="teamSelect">
       <option value="">All Teams</option>
-      <!-- teams unchanged -->
       <option value="ARI">Arizona Cardinals</option>
       <option value="ATL">Atlanta Falcons</option>
       <option value="BAL">Baltimore Ravens</option>
@@ -104,8 +103,21 @@
       />
       <div id="playerDropdown" class="search-dropdown hidden"></div>
     </div>
-
   </div>
+
+  <div class="saved-selection-controls">
+    <input id="selectionNameInput" type="text" placeholder="Name this selection..." />
+
+    <button id="savePlayerSelectionBtn">Save Selection</button>
+
+    <select id="savedSelectionsDropdown">
+      <option value="">Load saved selection...</option>
+    </select>
+
+    <button id="editPlayerSelectionBtn" class="small-selection-btn">Edit</button>
+    <button id="deletePlayerSelectionBtn" class="small-selection-btn delete-btn">Delete</button>
+  </div>
+
 
   <div class="chart-container"><canvas id="chart1"></canvas></div>
   <div class="chart-container"><canvas id="chart2"></canvas></div>
@@ -185,7 +197,19 @@
       />
       <div id="compareDropdown2" class="search-dropdown hidden"></div>
     </div>
+  </div>
 
+  <div class="saved-comparison-controls">
+    <input id="comparisonSelectionNameInput" type="text" placeholder="Name this comparison..." />
+
+    <button id="saveComparisonSelectionBtn">Save Comparison</button>
+
+    <select id="savedComparisonDropdown">
+      <option value="">Load saved comparison...</option>
+    </select>
+
+    <button id="editComparisonSelectionBtn" class="small-selection-btn">Edit</button>
+    <button id="deleteComparisonSelectionBtn" class="small-selection-btn delete-btn">Delete</button>
   </div>
 
   <div class="chart-container"><canvas id="compareChart1"></canvas></div>
@@ -283,7 +307,6 @@
       <option value="LB">Linebacker</option>
     </select>
 
-
     <div class="search-wrapper">
       <input
         type="text"
@@ -296,8 +319,19 @@
       class="search-dropdown hidden">
     </div>
     </div>
+  </div>
 
+  <div class="saved-trend-controls">
+    <input id="trendSelectionNameInput" type="text" placeholder="Name this trend..." />
 
+    <button id="saveTrendSelectionBtn">Save Trend</button>
+
+    <select id="savedTrendDropdown">
+      <option value="">Load saved trend...</option>
+    </select>
+
+    <button id="editTrendSelectionBtn" class="small-selection-btn">Edit</button>
+    <button id="deleteTrendSelectionBtn" class="small-selection-btn delete-btn">Delete</button>
   </div>
 
   <div class="chart-container">

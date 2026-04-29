@@ -21,6 +21,7 @@ NFL SCRIPT 4 – NFL CHAT AI TAB
     /* =========================================
     RECENT SEARCH STORAGE (Last 6)
     ========================================= */
+
     function saveRecentSearch(query) {
       let searches = JSON.parse(localStorage.getItem("nflRecentSearches")) || [];
       searches = searches.filter(s => s !== query);
@@ -51,6 +52,7 @@ NFL SCRIPT 4 – NFL CHAT AI TAB
     /* =========================================
     ADD MESSAGE TO CHAT WINDOW
     ========================================= */
+
     function addMessage(text, sender) {
       const messageDiv = document.createElement("div");
       messageDiv.classList.add(sender === "user" ? "user-msg" : "ai-msg", "chat-message");
@@ -62,6 +64,7 @@ NFL SCRIPT 4 – NFL CHAT AI TAB
     /* =========================================
     SEND MESSAGE TO BACKEND
     ========================================= */
+
     async function sendMessage() {
       const message = chatInput.value.trim();
       if (!message) return;
@@ -118,6 +121,7 @@ NFL SCRIPT 4 – NFL CHAT AI TAB
     /* =========================================
     RENDER PLAYER STATS CLEANLY
     ========================================= */
+
     function renderPlayerStats(data) {
       let output = `📊 ${data.player_display_name} (${data.season}) – ${data.position}\n\n`;
 
@@ -249,9 +253,6 @@ NFL SCRIPT 4 – NFL CHAT AI TAB
 
         chatInput.value = selectedQuestion;
         chatInput.focus();
-
-        // Optional: auto-send immediately
-        // sendMessage();
 
         chatSuggestions.selectedIndex = 0;
       });

@@ -109,7 +109,7 @@ header p {
   border: 1px solid var(--border-glow);
   box-shadow: 0 0 30px rgba(255, 255, 255, 0.08);
 
-  /* 🔑 FIX */
+  /* FIX */
   position: relative;
   overflow: visible;
   z-index: 10;
@@ -310,6 +310,7 @@ footer {
 #seasonPredictions:empty {
   display: none;
 }
+
 /* ===============================
 SEASON TRENDS – AI SUMMARY
 ================================ */
@@ -540,8 +541,8 @@ League Trends Charts
 }
 
 /*==============
- FOOTER Section 
- -------------*/
+FOOTER Section 
+-------------*/
 
 .site-footer {
   background: #0b0b0b;
@@ -566,7 +567,7 @@ League Trends Charts
 
 .footer-left .muted {
   color: #777;
-  display: block;             /* 🔑 forces new line */
+  display: block;             /* forces new line */
   margin-top: 4px;
 }
 
@@ -1326,5 +1327,114 @@ FANTASY TEAM BUILDER FILTERS
   .filters input[type="text"] {
     width: 100%;
     font-size: 16px;
+  }
+}
+
+/* Fix comparison tab player search dropdown visibility */
+#playerCompare .search-wrapper {
+  position: relative;
+  z-index: 30000;
+}
+
+#playerCompare .search-dropdown {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid #22d3ee;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.85);
+  z-index: 30001 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#playerCompare .dropdown-item {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+#playerCompare .dropdown-item:hover {
+  background: #1e293b;
+}
+
+/* =======================================================================================
+SAVE / EDIT / DELETE CONTROLS (Player Stats, Player Comparison, and Season Trends TABS)
+======================================================================================= */
+
+.saved-selection-controls,
+.saved-comparison-controls,
+.saved-trend-controls {
+  max-width: 1100px;
+  margin: -1rem auto 2rem auto;
+  padding: 1rem;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr 70px 70px;
+  gap: 0.75rem;
+  align-items: center;
+
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 14px;
+}
+
+/* Inputs, dropdowns, buttons */
+.saved-selection-controls input,
+.saved-selection-controls select,
+.saved-selection-controls button,
+.saved-comparison-controls input,
+.saved-comparison-controls select,
+.saved-comparison-controls button,
+.saved-trend-controls input,
+.saved-trend-controls select,
+.saved-trend-controls button {
+  height: 42px;
+  padding: 0 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: rgba(17, 24, 39, 0.75);
+  color: #e5e7eb;
+}
+
+/* Primary save buttons */
+#savePlayerSelectionBtn,
+#saveComparisonSelectionBtn,
+#saveTrendSelectionBtn {
+  background: rgba(34, 211, 238, 0.85);
+  color: #020617;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Small Edit/Delete buttons */
+.small-selection-btn {
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+  padding: 0;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Delete styling */
+.delete-btn {
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.delete-btn:hover {
+  background: rgba(127, 29, 29, 0.45);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .saved-selection-controls,
+  .saved-comparison-controls,
+  .saved-trend-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .small-selection-btn {
+    width: 100%;
+    max-width: none;
   }
 }

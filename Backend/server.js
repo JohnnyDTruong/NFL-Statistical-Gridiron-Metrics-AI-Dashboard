@@ -5,6 +5,7 @@ NFL AI Chat/Assistant Backend - Server Development (API + CRUD)
 /* ================================
 MONGO DB CONNECTION
 ================================ */
+
 require("dotenv").config(); // load .env
 const mongoose = require("mongoose");
 
@@ -29,6 +30,7 @@ const PORT = process.env.PORT || 3001;
 /* ================================
 LOAD NFL DATA
 ================================ */
+
 const frontendPath = path.join(__dirname, "../Frontend");
 app.use(express.static(frontendPath));
 
@@ -43,6 +45,7 @@ console.log("Loaded players:", players.length);
 /* ================================
 FUZZY SEARCH SETUP
 ================================ */
+
 const fuseOptions = {
   keys: [{ name: "player_display_name", weight: 2 }],
   threshold: 0.45,
@@ -53,6 +56,7 @@ const fuse = new Fuse(players, fuseOptions);
 /* ================================
 GRAMMAR CORRECTION
 ================================ */
+
 async function correctUserMessage(message) {
   try {
     const controller = new AbortController();
@@ -93,6 +97,7 @@ async function correctUserMessage(message) {
 /* ================================
 STAT KEYWORD MAP
 ================================ */
+
 const statMap = {
   "passing yards": "passing_yards",
   "pass yards": "passing_yards",
@@ -272,12 +277,14 @@ AI HELPER FUNCTIONS
 ================================ */
 
 /* CAREER TOTAL */
+
 function getCareerStat(playerName, stat) {
   const seasons = players.filter(p => p.player_display_name === playerName);
   return seasons.reduce((sum, s) => sum + getStat(s, stat), 0);
 }
 
 /* BEST SEASON */
+
 function getBestSeason(playerName, stat) {
   const seasons = players.filter(p => p.player_display_name === playerName);
   if (!seasons.length) return null;
@@ -288,6 +295,7 @@ function getBestSeason(playerName, stat) {
 }
 
 /* TREND ANALYSIS */
+
 function analyzeTrend(playerName, stat) {
   const seasons = players
     .filter(p => p.player_display_name === playerName)
@@ -304,6 +312,7 @@ function analyzeTrend(playerName, stat) {
 }
 
 /* CONSISTENCY SCORE */
+
 function getConsistencyScore(playerName, stat) {
   const seasons = players
     .filter(p => p.player_display_name === playerName)
@@ -397,6 +406,7 @@ function buildComparisonTrendChart(player1, player2, stat) {
 /* ================================
 POSITION DETECTION
 ================================ */
+
 function detectPosition(q) {
   if (q.includes("qb")) return "QB";
   if (q.includes("wr")) return "WR";
@@ -409,6 +419,7 @@ function detectPosition(q) {
 /* ================================
 PLAYER DETECTION
 ================================ */
+
 function detectPlayers(q) {
   let cleanQuery = q
     .toLowerCase()
@@ -471,6 +482,7 @@ function detectPlayers(q) {
 /* ================================
 CHECK IF DEFENSIVE STAT
 ================================ */
+
 function isDefensiveStat(stat) {
   return stat.startsWith("def_");
 }
@@ -478,6 +490,7 @@ function isDefensiveStat(stat) {
 /* ================================
 TOP PLAYERS / LEADERS
 ================================ */
+
 function getTopPlayers(stat, season = null, topN = 5, position = null) {
   let filtered = season
     ? players.filter(p => Number(p.season) === season)
@@ -508,6 +521,7 @@ function getTopPlayers(stat, season = null, topN = 5, position = null) {
 /* ================================
 SMARTER PREDICTIONS
 ================================ */
+
 function predictPlayerPerformance(playerName, stat) {
   const playerData = players
     .filter(p => p.player_display_name === playerName)
@@ -530,6 +544,7 @@ function predictPlayerPerformance(playerName, stat) {
 /* ================================
 FORMAT PLAYER STATS
 ================================ */
+
 function formatStats(player) {
   const pos = player.position;
   let output = `🏈 ${player.player_display_name} (${player.season}) – ${player.position}\n\n`;
@@ -576,6 +591,7 @@ Passes Defended: ${player.def_pass_defended || 0}
 /* ================================
 AI ENGINE
 ================================ */
+
 function generateResponse(question) {
   const q = question.toLowerCase();
   const intent = detectIntent(q);
@@ -590,12 +606,14 @@ function generateResponse(question) {
   ================================ */
 
   /* CAREER STATS */
+
   if (q.includes("career") && statRequested && playersMentioned.length) {
     const total = getCareerStat(playersMentioned[0], statRequested);
     return `🏆 Career ${statRequested.replace("def_", "").replace("_"," ")} for ${playersMentioned[0]}: ${total}`;
   }
 
   /* BEST SEASON */
+
   const isBestSeasonQuery =
   q.includes("best season") ||
   q.includes("highest season") ||
@@ -623,11 +641,13 @@ function generateResponse(question) {
   }
 
   /* TREND */
+
   if (!isChartQuery(q) && q.includes("trend") && statRequested && playersMentioned.length) {
     return analyzeTrend(playersMentioned[0], statRequested);
   }
 
   /* CONSISTENCY */
+
   if (q.includes("consistent") || q.includes("consistency")) {
     if (!playersMentioned.length) {
       return "I couldn't detect a player. Try a name like 'Justin Jefferson' or 'Travis Kelce'.";
@@ -665,6 +685,7 @@ function generateResponse(question) {
     }
 
     // Map stat values, ignore undefined/null, convert to number
+
     const values = seasons
       .map(s => Number(s[statToMeasure]))
       .filter(v => !isNaN(v));
@@ -682,11 +703,13 @@ function generateResponse(question) {
   }
 
   /* AUTO FIX DEFENSE LEADER QUERIES */
+
   if (statRequested && isDefensiveStat(statRequested)) {
     position = "DEF";
   }
 
   /* ELITE PLAYER CHECK */
+
   if (q.includes("elite") && playersMentioned.length) {
 
     const playerName = playersMentioned[0];
@@ -713,6 +736,7 @@ function generateResponse(question) {
   }
 
   /* LEAGUE LEADERS */
+
   if ((intent === "LEADER") && statRequested) {
     const top = getTopPlayers(statRequested, season, 5, position);
 
@@ -727,6 +751,7 @@ function generateResponse(question) {
   }
 
   /* PREDICTIONS */
+
   if ((intent === "PREDICT" || q.includes("predict")) && playersMentioned.length) {
 
     const playerName = playersMentioned[0];
@@ -745,6 +770,7 @@ function generateResponse(question) {
   }
 
     /* WHO IS BETTER */ 
+
   if (q.includes("better") && playersMentioned.length === 2) {
 
     const [p1, p2] = playersMentioned;
@@ -779,6 +805,7 @@ function generateResponse(question) {
   }
 
   /* TWO PLAYER COMPARISON CHART */
+
   if (isChartQuery(q) && playersMentioned.length === 2 && statRequested) {
     const [p1Name, p2Name] = playersMentioned;
 
@@ -798,6 +825,7 @@ function generateResponse(question) {
   }
 
   /* COMPARISON */
+
   if (playersMentioned.length === 2 && statRequested) {
     const [p1Name, p2Name] = playersMentioned;
 
@@ -839,6 +867,7 @@ function generateResponse(question) {
   }
 
   /* CHART / TREND VISUALIZATION */
+
   if (isChartQuery(q) && playersMentioned.length) {
   let chartStat = statRequested;
 
@@ -879,6 +908,7 @@ function generateResponse(question) {
   }
 
   /* SINGLE PLAYER LOOKUP */
+
   const playerCandidates = players.filter(
     p => p.player_display_name === playersMentioned[0]
   );
@@ -912,6 +942,7 @@ ${statRequested.replace("def_", "").replace("_", " ").toUpperCase()}: ${value}
 /* ================================
 ROUTE
 ================================ */
+
 app.post("/api/chat", async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ reply: "Please ask a question." });
@@ -930,6 +961,7 @@ app.post("/api/chat", async (req, res) => {
 /* ================================
 START SERVER
 ================================ */
+
 app.listen(PORT, () => {
   console.log(`🚀 NFL AI Server running on http://localhost:${PORT}`);
 });
@@ -940,3 +972,16 @@ app.listen(PORT, () => {
 
 const fantasyRoutes = require("./routes/fantasy");
 app.use("/api/fantasy", fantasyRoutes);
+
+// ============================
+// Save Selection Routes
+// ============================
+
+const playerSelectionRoutes = require("./routes/playerSelections");
+app.use("/api/player-selections", playerSelectionRoutes);
+
+const comparisonSelectionRoutes = require("./routes/comparisonSelections");
+app.use("/api/comparison-selections", comparisonSelectionRoutes);
+
+const trendSelectionRoutes = require("./routes/trendSelections");
+app.use("/api/trend-selections", trendSelectionRoutes);

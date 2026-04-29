@@ -9,7 +9,6 @@ data = []
 with open(csv_file, newline='', encoding='utf-8') as f:
     reader = csv.DictReader(f)
     for row in reader:
-        # Optional: convert numbers to int/float
         for key in row:
             try:
                 if '.' in row[key]:

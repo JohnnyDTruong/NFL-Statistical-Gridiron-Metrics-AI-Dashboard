@@ -293,5 +293,3 @@ NFL SCRIPT 3 – LEAGUE TRENDS & AI INSIGHTS
   positionSelect?.addEventListener("change", refresh);
 
 })();
-
-// 298 LOC
