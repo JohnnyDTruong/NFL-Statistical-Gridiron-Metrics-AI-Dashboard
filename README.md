@@ -10,28 +10,35 @@ Features:
 -Search players with intelligent autocomplete (fuzzy search)
 -Filter by season, team, and position
 -Dynamic stat retrieval from structured datasets
+-Save, Edit, and Delete Player Selections for individual players, two-player comparisons, and seasonal trends for individual players
 
 2.) Interactive Data Visualization
 -Line charts for player trends over multiple seasons
 -Comparison charts between multiple players
 -League average and positional trend analysis
+-Bar Charts for Top 5 League Leaders for All Positions based on Season
+-Chart Flexibility/Compatibility for cross-platforms
 
 3.) AI-Powered Assistant
 -Natural language queries (e.g., “plot Lamar Jackson fantasy points”)
 -Intelligent parsing of player names and stats
 -Dynamic chart generation inside chat
 -AI-style insights and trend interpretation
+-AI Feedback for Fantasy Team Builds 
 
 4.) Advanced Analytics
 -Trend detection (increasing, decreasing, stable)
 -Consistency scoring
 -Predictive modeling based on historical data
+-Stats Predictions (Floor/Expected/Ceiling) with confidence percentages for all the important stats for each position
 
 5.) Fantasy Team Builder
 -Build custom fantasy teams (QB, RB, WR, TE)
--Calculate total fantasy points
+-Calculate total fantasy points and predicted fantasy points based on statistical methods
 -Generate AI-based team feedback and grading
 -Save and manage teams using MongoDB
+-Generate best line up Option
+-Search Bar for Fantasy Teams
 
 6.) Modern UI/UX
 -Dynamic tab-based interface
@@ -55,8 +62,9 @@ Tech Stack:
 
 4.) Other Tools
 -JSON-based NFL datasets
+-Python Scripts for Data Conversions
 -LanguageTool API
--Git & GitHub
+-Git & GitHub for Version Control
 
 How the AI Works:
 
